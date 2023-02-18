@@ -2,6 +2,7 @@ require('dotenv').config()
 const https = require('https')
 const SPEECH_REGION = process.env.SPEECH_REGION
 const SPEECH_KEY = process.env.SPEECH_KEY
+const {GetGPTResponse} = require('./chat')
 
 const options = {
   hostname: `${SPEECH_REGION}.tts.speech.microsoft.com`,
@@ -17,8 +18,9 @@ const options = {
 
 function handleConnection(socket) {
   console.log('A user connected')
-  socket.on('request-audio', (text, voice) => {
-    let requestBody = `<?xml version="1.0"?><speak version='1.0' xml:lang='en-US'><voice xml:lang='en-US' xml:gender='Female' name='${voice}'><prosody pitch="high">${text}</prosody></voice></speak>`;
+  socket.on('request-audio', async (text, voice) => {
+    let gptResponse = await GetGPTResponse(text)
+    let requestBody = `<?xml version="1.0"?><speak version='1.0' xml:lang='en-US'><voice xml:lang='en-US' xml:gender='Female' name='${voice}'><prosody pitch="high">${gptResponse}</prosody></voice></speak>`;
     console.log('new request')
     const req = https.request(options, (res) => {
       res.on('data', (chunk) => {
