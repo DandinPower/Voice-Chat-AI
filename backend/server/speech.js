@@ -3,6 +3,7 @@ const https = require('https')
 const SPEECH_REGION = process.env.SPEECH_REGION
 const SPEECH_KEY = process.env.SPEECH_KEY
 const {GetGPTResponse} = require('./chat')
+const {SetBasePrompt,  ClearSocketInfo} = require('../prompt')
 
 const options = {
   hostname: `${SPEECH_REGION}.tts.speech.microsoft.com`,
@@ -19,9 +20,11 @@ const options = {
 function handleConnection(socket) {
   console.log('A user connected')
   socket.on('request-audio', async (text, voice) => {
-    let gptResponse = await GetGPTResponse(text)
+    await SetBasePrompt(socket.id, voice)
+
+
+    let gptResponse = await GetGPTResponse(socket.id, text)
     let requestBody = `<?xml version="1.0"?><speak version='1.0' xml:lang='en-US'><voice xml:lang='en-US' xml:gender='Female' name='${voice}'><prosody pitch="high">${gptResponse}</prosody></voice></speak>`;
-    console.log('new request')
     const req = https.request(options, (res) => {
       res.on('data', (chunk) => {
         socket.emit('audio-chunk', chunk);
@@ -36,6 +39,10 @@ function handleConnection(socket) {
     })
     req.write(requestBody)
     req.end()
+  })
+
+  socket.on('clear-chat', async ()=>{
+    await ClearSocketInfo(socket.id)
   })
 
   socket.on('disconnect', () => {

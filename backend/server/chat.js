@@ -1,4 +1,5 @@
 require('dotenv').config()
+const {GetBasePrompt, AddChat, GetQuestions, GetResponse, GetChatLength} = require('../prompt')
 const { Configuration, OpenAIApi } = require("openai");
 
 const configuration = new Configuration({
@@ -6,31 +7,38 @@ const configuration = new Configuration({
 });
 const openai = new OpenAIApi(configuration);
 
-const basePrompt = 'Please pretend that you are a high school girl who name is Ashley and is very passionate and lively towards others.\
-In addition, please correct any grammar mistakes in my question.'
-
-var lastPrompt = ''
-var lastResponse = ''
-
 const ClearResponseNewLine = (text) => {
     let arr = text.split(/\n/)
     let lastSegment = arr.pop()
     return lastSegment
 }
 
-async function GetGPTResponse(text){
-    const prompt = basePrompt + '\nMy last question is :' + lastPrompt + '\nAshley\'s Reply: :' + lastResponse + `\nNow answer my question : ${text} \nAshley's Reply:`
+async function GetGPTResponse(socketId, question){
+    let basePrompt = await GetBasePrompt(socketId)
+    let previousLength = await GetChatLength(socketId)
+    let questions = await GetQuestions(socketId)
+    let responses = await GetResponse(socketId)
+    var prompt = basePrompt
+    for (let i=0; i<previousLength; i++){
+      prompt = `${prompt}\nMy question: ${questions[i]}`
+      prompt = `${prompt}\nAshley's reply: ${responses[i]}`
+    }
+    prompt = `${prompt}\nNow answer my new question: ${question}`
+    prompt = `${prompt}\nAshley's reply:`
+
     console.log(`Prompt:\n ${prompt}`)
-    lastPrompt = text
+
     const completion = await openai.createCompletion({
         model: "text-davinci-003",
         prompt: prompt,
         max_tokens: 256,
       });
-    let AIResponse = ClearResponseNewLine(completion.data.choices[0].text)
-    console.log(`Response:\n ${AIResponse}`)
-    lastResponse = AIResponse
-    return AIResponse
+    let response = ClearResponseNewLine(completion.data.choices[0].text)
+
+    await AddChat(socketId, question, response)
+
+    console.log(`Response:\n ${response}`)
+    return response
 }
 
 module.exports = { GetGPTResponse }

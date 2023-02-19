@@ -70,6 +70,12 @@ function App() {
     recognition.start();
   };
 
+  const clearTranscript = () => {
+    socket.emit('clear-chat');
+    setTranscript('');
+    setResponseText('')
+  };
+
   return (
     <Container className="my-4">
       <Row>
@@ -88,8 +94,11 @@ function App() {
       </Row>
       <Row className='my-4'>
         <Col>
-          <Button onClick={startRecording} disabled={isRecording}>
+          <Button onClick={startRecording} disabled={isRecording} className="me-2">
             Start Chating
+          </Button>
+          <Button variant="danger" onClick={clearTranscript} disabled={!transcript}>
+            Clear Chat Record
           </Button>
           <p>What You Say: {transcript}</p>
           <p>Response: {responseText}</p>
