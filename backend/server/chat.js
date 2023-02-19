@@ -22,7 +22,7 @@ const GetTrueResponse = (text) => {
 }
 
 async function GetGPTResponse(text){
-    const prompt = basePrompt + '\nlast question is:' + lastPrompt + '\nlast answer is:' + lastResponse + `\nnow answer my question: ${text}`
+    const prompt = basePrompt + '\nMy last question is :' + lastPrompt + '\nAshley\'s Reply: :' + lastResponse + `\nNow answer my question : ${text} \nAshley's Reply:`
     console.log(`Prompt:\n ${prompt}`)
     lastPrompt = text
     const completion = await openai.createCompletion({
