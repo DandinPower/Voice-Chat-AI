@@ -14,11 +14,12 @@ function App() {
   const [selectedOption, setSelectedOption] = useState('en-US-DavisNeural');
   const [isRecording, setIsRecording] = useState(false);
   const [transcript, setTranscript] = useState('');
+  const [responseText, setResponseText] = useState('');
 
   const requestAudioData = useCallback((text, option) => {
     // Clear the current audio chunks
     setAudioChunks([]);
-
+    setResponseText('');
     // Request audio data from the server
     socket.emit('request-audio', text, option);
 
@@ -37,6 +38,11 @@ function App() {
     });
 
   }, []);
+
+  socket.on('response-text', (text)=>{
+    setResponseText(text)
+    socket.off('response-text')
+  })
 
   useEffect(() => {
     // Create the URL for the audio data
@@ -61,13 +67,9 @@ function App() {
       requestAudioData(spoken, selectedOption);
       setPlaying(true);
       setTranscript(spoken);
+      setIsRecording(false);
     };
-
     recognition.start();
-  };
-
-  const stopRecording = () => {
-    setIsRecording(false);
   };
 
   return (
@@ -89,12 +91,10 @@ function App() {
       <Row className='my-4'>
         <Col>
           <Button onClick={startRecording} disabled={isRecording}>
-          Start Recording
+            Start Chating
           </Button>
-          <Button onClick={stopRecording} disabled={!isRecording}>
-            Stop Recording
-          </Button>
-        <p>Transcript: {transcript}</p>
+          <p>What You Say: {transcript}</p>
+          <p>Response: {responseText}</p>
         </Col>
       </Row>
 

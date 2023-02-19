@@ -28,6 +28,7 @@ function handleConnection(socket) {
       })
       res.on('end', () => {
         socket.emit('audio-end');
+        socket.emit('response-text', gptResponse)
       })
     })
     req.on('error', (error) => {
