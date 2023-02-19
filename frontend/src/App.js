@@ -74,6 +74,8 @@ function App() {
     socket.emit('clear-chat');
     setTranscript('');
     setResponseText('')
+    setIsRecording(false);
+    setPlaying(false);
   };
 
   return (
