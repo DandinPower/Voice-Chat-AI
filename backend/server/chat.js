@@ -12,10 +12,7 @@ In addition, please correct any grammar mistakes in my question.'
 var lastPrompt = ''
 var lastResponse = ''
 
-const GetTrueResponse = (text) => {
-    console.log('\n\n\n')
-    console.log(text)
-    console.log('\n\n\n')
+const ClearResponseNewLine = (text) => {
     let arr = text.split(/\n/)
     let lastSegment = arr.pop()
     return lastSegment
@@ -30,7 +27,7 @@ async function GetGPTResponse(text){
         prompt: prompt,
         max_tokens: 256,
       });
-    let AIResponse = GetTrueResponse(completion.data.choices[0].text)
+    let AIResponse = ClearResponseNewLine(completion.data.choices[0].text)
     console.log(`Response:\n ${AIResponse}`)
     lastResponse = AIResponse
     return AIResponse
